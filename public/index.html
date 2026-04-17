@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ML Heroes</title>
+</head>
+<body>
+
+<h1>Mobile Legends Heroes</h1>
+
+<button onclick="loadHeroes()">Display Heroes</button>
+<ul id="list"></ul>
+
+<h2>Add Hero</h2>
+<input id="name" placeholder="Name">
+<input id="role" placeholder="Role">
+<input id="difficulty" placeholder="Difficulty">
+<button onclick="addHero()">Submit</button>
+
+<script>
+async function loadHeroes() {
+    const res = await fetch('http://localhost:3000/api/heroes')
+    const data = await res.json()
+
+    const list = document.getElementById('list')
+    list.innerHTML = ''
+
+    data.forEach(hero => {
+        const li = document.createElement('li')
+
+        li.innerHTML = `
+            Name: ${hero.name} | Role: ${hero.role} | Difficulty: ${hero.difficulty}
+            <button onclick="deleteHero(${hero.id})">Delete</button>
+        `
+
+        list.appendChild(li)
+    })
+}
+
+// ✅ DELETE FUNCTION
+async function deleteHero(id) {
+    await fetch(`http://localhost:3000/api/heroes/${id}`, {
+        method: 'DELETE'
+    })
+
+    loadHeroes() // refresh list
+}
+
+// ADD HERO (unchanged)
+async function addHero(){
+    const name = document.getElementById('name').value
+    const role = document.getElementById('role').value
+    const difficulty = document.getElementById('difficulty').value
+
+    await fetch('http://localhost:3000/api/heroes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({name, role, difficulty})
+    })
+
+    loadHeroes()
+}
+</script>
+
+</body>
+</html>
