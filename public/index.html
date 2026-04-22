@@ -8,19 +8,31 @@
 <h1>Mobile Legends Heroes</h1>
 
 <button onclick="loadHeroes()">Display Heroes</button>
+
+<h2>Search Hero</h2>
+<input id="search" placeholder="Enter hero name">
+<button onclick="searchHero()">Search</button>
+
 <ul id="list"></ul>
 
-<h2>Add Hero</h2>
+<h2>Add / Edit Hero</h2>
 <input id="name" placeholder="Name">
 <input id="role" placeholder="Role">
 <input id="difficulty" placeholder="Difficulty">
 <button onclick="addHero()">Submit</button>
 
 <script>
-async function loadHeroes() {
-    const res = await fetch('http://localhost:3000/api/heroes')
-    const data = await res.json()
 
+const BASE_URL = "https://sia-assignment.onrender.com"
+let editId = null
+
+async function loadHeroes() {
+    const res = await fetch(`${BASE_URL}/api/heroes`)
+    const data = await res.json()
+    displayHeroes(data)
+}
+
+function displayHeroes(data) {
     const list = document.getElementById('list')
     list.innerHTML = ''
 
@@ -29,6 +41,7 @@ async function loadHeroes() {
 
         li.innerHTML = `
             Name: ${hero.name} | Role: ${hero.role} | Difficulty: ${hero.difficulty}
+            <button onclick="startEdit(${hero.id}, '${hero.name}', '${hero.role}', '${hero.difficulty}')">Edit</button>
             <button onclick="deleteHero(${hero.id})">Delete</button>
         `
 
@@ -36,29 +49,54 @@ async function loadHeroes() {
     })
 }
 
-// ✅ DELETE FUNCTION
-async function deleteHero(id) {
-    await fetch(`http://localhost:3000/api/heroes/${id}`, {
-        method: 'DELETE'
-    })
-
-    loadHeroes() // refresh list
+function startEdit(id, name, role, difficulty) {
+    editId = id
+    document.getElementById('name').value = name
+    document.getElementById('role').value = role
+    document.getElementById('difficulty').value = difficulty
 }
 
-// ADD HERO (unchanged)
+async function searchHero() {
+    const keyword = document.getElementById('search').value
+    const res = await fetch(`${BASE_URL}/api/search?name=${keyword}`)
+    const data = await res.json()
+    displayHeroes(data)
+}
+
+async function deleteHero(id) {
+    await fetch(`${BASE_URL}/api/heroes/${id}`, {
+        method: 'DELETE'
+    })
+    loadHeroes()
+}
+
 async function addHero(){
     const name = document.getElementById('name').value
     const role = document.getElementById('role').value
     const difficulty = document.getElementById('difficulty').value
 
-    await fetch('http://localhost:3000/api/heroes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({name, role, difficulty})
-    })
+    if (editId) {
+        await fetch(`${BASE_URL}/api/heroes/${editId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, role, difficulty })
+        })
+        editId = null
+    } else {
+        await fetch(`${BASE_URL}/api/heroes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, role, difficulty })
+        })
+    }
+
+    document.getElementById('name').value = ''
+    document.getElementById('role').value = ''
+    document.getElementById('difficulty').value = ''
 
     loadHeroes()
 }
+
 </script>
 
 </body>
