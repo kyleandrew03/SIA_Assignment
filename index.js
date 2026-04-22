@@ -73,32 +73,12 @@ app.delete('/api/heroes/:id', (req, res) =>{
     res.json({ message: "Hero deleted" })
 })
 
-app.get('/api/heroes/role/:role', (req, res) =>{
-    const result = heroes.filter(h => 
-        h.role.toLowerCase() === req.params.role.toLowerCase()
-    )
-    res.json(result)
-})
-
 app.get('/api/search', (req, res) =>{
     const name = req.query.name || ""
     const result = heroes.filter(h =>
         h.name.toLowerCase().includes(name.toLowerCase())
     )
     res.json(result)
-})
-
-app.get('/api/random', (req, res) =>{
-    const random = heroes[Math.floor(Math.random() * heroes.length)]
-    res.json(random)
-})
-
-app.get('/api/stats', (req, res) =>{
-    res.json({ totalHeroes: heroes.length })
-})
-
-app.get('/api/top-heroes', (req, res) =>{
-    res.json(heroes.slice(0, 2))
 })
 
 app.listen(port, () => {
